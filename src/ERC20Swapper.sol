@@ -3,11 +3,17 @@ pragma solidity ^0.8.13;
 
 import {IERC20Swapper} from "./IERC20Swapper.sol";
 import {IUniswapV2Router02} from "./interfaces/IUniswapV2Router02.sol";
+import {Initializable} from "./../lib/openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol";
 
-contract ERC20Swapper is IERC20Swapper {
-    IUniswapV2Router02 immutable router;
+contract ERC20Swapper is Initializable, IERC20Swapper {
+    IUniswapV2Router02 internal router;
 
-    constructor(address _router) {
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+
+    function initialize(address _router) public initializer {
         router = IUniswapV2Router02(_router);
     }
 

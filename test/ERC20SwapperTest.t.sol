@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 import {ERC20Swapper} from "./../src/ERC20Swapper.sol";
 import {Test, console} from "forge-std/Test.sol";
+import {Upgrades} from "openzeppelin-foundry-upgrades/Upgrades.sol";
 
 contract ERC20SwaperTest is Test {
     address private constant UNISWAP_V2_ROUTER =
@@ -17,11 +18,18 @@ contract ERC20SwaperTest is Test {
     uint256 mainnetFork;
     string MAINNET_RPC_URL = vm.envString("MAINNET_RPC_URL");
 
+    address proxyAdmin = address(1);
+
     function setUp() public {
         uint256 forkBlock = 20256882;
         mainnetFork = vm.createSelectFork(MAINNET_RPC_URL, forkBlock);
         vm.selectFork(mainnetFork);
-        swapper = new ERC20Swapper(UNISWAP_V2_ROUTER);
+        address proxy = Upgrades.deployTransparentProxy(
+            "ERC20Swapper.sol",
+            proxyAdmin,
+            abi.encodeCall(ERC20Swapper.initialize, (UNISWAP_V2_ROUTER))
+        );
+        swapper = ERC20Swapper(proxy);
     }
 
     function testSwapEtherToToken() public {
